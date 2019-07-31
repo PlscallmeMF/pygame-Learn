@@ -21,6 +21,7 @@ class Myplane(pygame.sprite.Sprite):
         self.speed = 10
         self.destory = False
         self.mask = pygame.mask.from_surface(self.image1)
+        self.control = True
     def moveup(self):
         if self.rect.top>0:
             self.rect.top -=self.speed

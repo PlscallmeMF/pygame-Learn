@@ -14,6 +14,11 @@ bg_size = width,height = 480,700
 screen = pygame.display.set_mode(bg_size)
 pygame.display.set_caption('飞机大战')
 
+BLACK =(0,0,0)
+GREEN = (0,255,0)
+RED = (255,0,0)
+WHITE = (255,255,255)
+
 background =pygame.image.load('images/background.png').convert()
 # 载入游戏音乐
 pygame.mixer.music.load("sound/game_music.ogg")
@@ -60,12 +65,11 @@ def big_enemy_add(group1,group2,num):
 
 def main():
     pygame.mixer.music.play(-1)
-
     clock = pygame.time.Clock()
     #image1 image2 switch
     sw_image = True
     #Delay
-    delay = 50
+    delay = 1800
     me = myplane.Myplane(bg_size)
     # Total Enemy
     total_enemy = pygame.sprite.Group()
@@ -77,7 +81,7 @@ def main():
     mid_enemy_add(total_enemy, mid_enemy, 5)
     # Big Enemy
     big_enemy = pygame.sprite.Group()
-    big_enemy_add(total_enemy, big_enemy, 2)
+    big_enemy_add(total_enemy, big_enemy, 3)
     # Bullet
     bullet1=[]
     bullet1_num = 8
@@ -90,8 +94,20 @@ def main():
     mid_flight_index = 0
     big_flight_index = 0
     me_flight_index = 0
-
-
+    # Score record
+    score = 0
+    score_font = pygame.font.Font('font/font.ttf',36)
+    # Level
+    level = 1
+    #Pause or Unpause
+    pause = False
+    pause_nor_image =pygame.image.load('images/pause_nor.png').convert_alpha()
+    pause_pressed_image = pygame.image.load('images/pause_pressed.png').convert_alpha()
+    resume_nor_image = pygame.image.load('images/resume_nor.png').convert_alpha()
+    resume_pressed_image = pygame.image.load('images/resume_pressed.png').convert_alpha()
+    pause_rect = pause_nor_image.get_rect()
+    pause_rect.left, pause_rect.top = width - pause_rect.width, 10
+    pause_img = pause_nor_image
 
     running = True
 
@@ -100,108 +116,229 @@ def main():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
-        key_pressed = pygame.key.get_pressed()
-        if key_pressed[K_UP]:
-            me.moveup()
-        if key_pressed[K_DOWN]:
-            me.movedown()
-        if key_pressed[K_LEFT]:
-            me.moveleft()
-        if key_pressed[K_RIGHT]:
-            me.moveright()
-        screen.blit(background,(0,0))
-        if not (delay % 10):
-            bullet1[bullet1_index].reset4(me.rect.midtop)
-            bullet1_index = (bullet1_index + 1) % bullet1_num
-
-        for b in bullet1:
-            if b.active:
-                b.move()
-                screen.blit(b.img,b.rect)
-                enemy_hit = pygame.sprite.spritecollide(b,total_enemy,False,pygame.sprite.collide_mask)
-                if enemy_hit:
-                    b.active = False
-                    for e in enemy_hit:
-                        e.destory = True
-
-        if not me.destory:
-            if sw_image:
-                screen.blit(me.image1,me.rect)
-            else:
-                screen.blit(me.image2,me.rect)
-        else:
-            if me_flight_index ==1:
-                me_down_sound.play()
-            if not (delay % 5):
-                screen.blit(each.destory_images[me_flight_index], each.rect)
-                me_flight_index+=1
-                if me_flight_index == 4:
-                    me_flight_index = 0
-                    me.reset()
-
-        if not (delay%10):
-            sw_image = not sw_image
-            delay -=1
-        elif delay ==0:
-            delay = 50
-        else:
-            delay -=1
-        enemy_down = pygame.sprite.spritecollide(me,total_enemy,False,pygame.sprite.collide_mask)
-        if enemy_down:
-            me.destory = True
-            for e in enemy_down:
-                e.destory = True
-
-        for each in big_enemy:
-            each.move()
-            if not each.destory:
-                if sw_image:
-                    screen.blit(each.image1,each.rect)
+            elif event.type == MOUSEBUTTONDOWN:
+                if event.button ==1 and pause_rect.collidepoint(event.pos):
+                    pause = not pause
+                    if pause:
+                        pause_img = resume_nor_image
+                    else:
+                        pause_img = pause_nor_image
+            elif event.type == MOUSEMOTION:
+                if pause_rect.collidepoint(event.pos):
+                    if pause:
+                        pause_img = resume_pressed_image
+                    else:
+                        pause_img = pause_pressed_image
                 else:
-                    screen.blit(each.image2, each.rect)
-                if each.rect.bottom == -50:
-                    enemy3_fly_sound.play()
-            else:
-                if big_flight_index ==1:
-                    enemy3_down_sound.play()
-                if not (delay % 5):
-                    screen.blit(each.destory_images[big_flight_index],each.rect)
-                    big_flight_index +=1
-                    if big_flight_index == 6:
-                        enemy3_fly_sound.stop()
-                        big_flight_index = 0
-                        each.reset3()
+                    if pause:
+                        pause_img = resume_nor_image
+                    else:
+                        pause_img = pause_nor_image
+        screen.blit(background, (0, 0))
+        if not pause:
+            pygame.mixer.music.unpause()
+            key_pressed = pygame.key.get_pressed()
+            if key_pressed[K_UP]:
+                me.moveup()
+            if key_pressed[K_DOWN]:
+                me.movedown()
+            if key_pressed[K_LEFT]:
+                me.moveleft()
+            if key_pressed[K_RIGHT]:
+                me.moveright()
 
-        for each in mid_enemy:
-            each.move()
-            if not each.destory:
-                screen.blit(each.image,each.rect)
-            else:
-                if mid_flight_index == 1:
-                    enemy2_down_sound.play()
-                if not (delay % 5):
-                    screen.blit(each.destory_images[mid_flight_index], each.rect)
-                    mid_flight_index += 1
-                    if mid_flight_index == 4:
-                        mid_flight_index = 0
-                        each.reset2()
+            if not (delay % 10):
+                bullet1[bullet1_index].reset4(me.rect.midtop)
+                bullet1_index = (bullet1_index + 1) % bullet1_num
 
-        for each in small_enemy:
-            each.move()
-            if not each.destory:
-                screen.blit(each.image,each.rect)
-            else:
-                if small_flight_index == 1:
-                    enemy1_down_sound.play()
-                if not (delay % 5):
-                    screen.blit(each.destory_images[small_flight_index], each.rect)
-                    small_flight_index += 1
-                    if small_flight_index == 4:
-                        small_flight_index = 0
-                        each.reset1()
+            for b in bullet1:
+                if b.active:
+                    b.move()
+                    screen.blit(b.img,b.rect)
+                    enemy_hit = pygame.sprite.spritecollide(b,total_enemy,False,pygame.sprite.collide_mask)
+                    if enemy_hit:
+                        b.active = False
+                        for e in enemy_hit:
+                            if e in mid_enemy or e in big_enemy:
+                                e.hit = True
+                                e.energy -=1
+                                if e.energy ==0:
+                                    e.destory = True
+                            else:
+                                e.destory = True
 
+            if not me.destory:
+                if sw_image:
+                    screen.blit(me.image1,me.rect)
+                else:
+                    screen.blit(me.image2,me.rect)
+            else:
+                if me_flight_index ==1:
+                    me_down_sound.play()
+                if not (delay % 5):
+                    screen.blit(each.destory_images[me_flight_index], each.rect)
+                    me_flight_index+=1
+                    if me_flight_index == 4:
+                        me_flight_index = 0
+                        me.reset()
+
+            if not (delay % 10):
+                sw_image = not sw_image
+                delay -= 1
+            elif delay == 0:
+                delay = 1800
+            else:
+                delay -= 1
+            enemy_down = pygame.sprite.spritecollide(me, total_enemy, False, pygame.sprite.collide_mask)
+            if enemy_down:
+                me.destory = True
+                for e in enemy_down:
+                    e.destory = True
+
+            for each in big_enemy:
+                if not each.destory:
+                    each.move()
+                    if each.hit:
+                        screen.blit(each.image_hit, each.rect)
+                        each.hit = False
+                    else:
+                        if not each.destory:
+                            if sw_image:
+                                screen.blit(each.image1, each.rect)
+                            else:
+                                screen.blit(each.image2, each.rect)
+                    pygame.draw.line(screen, BLACK,
+                                     (each.rect.left, each.rect.top - 5),
+                                     (each.rect.right, each.rect.top - 5),
+                                     2)
+                    energy_remain = each.energy / enemy.BigEnemy.energy
+                    if energy_remain > 0.2:
+                        energy_color = GREEN
+                    else:
+                        energy_color = RED
+                    pygame.draw.line(screen, energy_color,
+                                     (each.rect.left, each.rect.top - 5),
+                                     (each.rect.left + each.rect.width * energy_remain,
+                                      each.rect.top - 5), 2)
+
+                    if each.rect.bottom == -50:
+                        enemy3_fly_sound.play()
+                else:
+                    if big_flight_index == 1:
+                        enemy3_down_sound.play()
+                    if not (delay % 5):
+                        screen.blit(each.destory_images[big_flight_index], each.rect)
+                        big_flight_index += 1
+                        if big_flight_index == 6:
+                            enemy3_fly_sound.stop()
+                            big_flight_index = 0
+                            score += 10000
+                            each.reset3()
+
+            for each in mid_enemy:
+                if not each.destory:
+                    each.move()
+                    if each.hit:
+                        screen.blit(each.image_hit, each.rect)
+                        each.hit = False
+                    else:
+                        if not each.destory:
+                            screen.blit(each.image, each.rect)
+                    pygame.draw.line(screen, BLACK,
+                                     (each.rect.left, each.rect.top - 5),
+                                     (each.rect.right, each.rect.top - 5),
+                                     2)
+                    energy_remain = each.energy / enemy.MidEnemy.energy
+                    if energy_remain > 0.2:
+                        energy_color = GREEN
+                    else:
+                        energy_color = RED
+                    pygame.draw.line(screen, energy_color,
+                                     (each.rect.left, each.rect.top - 5),
+                                     (each.rect.left + each.rect.width * energy_remain,
+                                      each.rect.top - 5), 2)
+                else:
+                    if mid_flight_index == 1:
+                        enemy2_down_sound.play()
+                    if not (delay % 5):
+                        screen.blit(each.destory_images[mid_flight_index], each.rect)
+                        mid_flight_index += 1
+                        if mid_flight_index == 4:
+                            mid_flight_index = 0
+                            score += 5000
+                            each.reset2()
+
+            for each in small_enemy:
+                each.move()
+                if not each.destory:
+                    screen.blit(each.image, each.rect)
+                else:
+                    if small_flight_index == 1:
+                        enemy1_down_sound.play()
+                    if not (delay % 5):
+                        screen.blit(each.destory_images[small_flight_index], each.rect)
+                        small_flight_index += 1
+                        if small_flight_index == 4:
+                            small_flight_index = 0
+                            score += 1000
+                            each.reset1()
+
+        if pause:
+            pygame.mixer.music.pause()
+            pause_font = pygame.font.Font('font/font.ttf',60)
+            pause_text = pause_font.render('Pause...',True, RED)
+            pause_text_rect = pause_text.get_rect()
+            screen.blit(pause_text,((width - pause_text_rect[0])//2-75,(height-pause_text_rect[1])//2))
+
+
+        score_text = score_font.render('Score: %s' %str(score),True, WHITE)
+        screen.blit(score_text,(10,5))
+        # Pause image
+        screen.blit(pause_img,pause_rect)
         pygame.display.flip()
         clock.tick(60)
+        #Level increase
+        if score > 10000 and score<=50000:
+            if level ==1:
+                level = 2
+                level_up = True
+        elif score > 50000 and score <= 100000:
+            if level ==2:
+                level = 3
+                level_up = True
+        elif score >100000 and score <=200000:
+            if level ==3:
+                level = 4
+                level_up = True
+        elif score > 200000:
+            if level ==4:
+                level = 5
+                level_up = True
+        if level == 2 and level_up:
+            small_enemy_add(total_enemy, small_enemy, 5)
+            mid_enemy_add(total_enemy, mid_enemy, 3)
+            for each in small_enemy:
+                each.speed = 3
+            level_up = False
+        elif level == 3 and level_up:
+            small_enemy_add(total_enemy, small_enemy, 4)
+            mid_enemy_add(total_enemy, mid_enemy, 2)
+            for each in small_enemy:
+                each.speed = 4
+            level_up = False
+        elif level == 4 and level_up:
+            small_enemy_add(total_enemy, small_enemy, 3)
+            mid_enemy_add(total_enemy, mid_enemy, 1)
+            for each in small_enemy:
+                each.speed = 5
+            level_up = False
+        elif level == 5 and level_up:
+            small_enemy_add(total_enemy, small_enemy, 2)
+            mid_enemy_add(total_enemy, mid_enemy, 1)
+            for each in small_enemy:
+                each.speed = 6
+            level_up = False
+
 
 if __name__ == '__main__':
     try:
