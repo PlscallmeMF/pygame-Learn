@@ -99,6 +99,11 @@ def main():
     score_font = pygame.font.Font('font/font.ttf',36)
     # Level
     level = 1
+    #Bomb
+    bomb_image =  pygame.image.load('images/bomb.png').convert_alpha()
+    bomb_rect  = bomb_image.get_rect()
+    bomb_font = pygame.font.Font('font/font.ttf',40)
+    bomb_num = 3
     #Pause or Unpause
     pause = False
     pause_nor_image =pygame.image.load('images/pause_nor.png').convert_alpha()
@@ -134,6 +139,16 @@ def main():
                         pause_img = resume_nor_image
                     else:
                         pause_img = pause_nor_image
+            elif event.type == KEYDOWN:
+                if event.key == K_SPACE:
+                    if bomb_num:
+                        bomb_num -=1
+                        bomb_sound.play()
+                        for each in total_enemy:
+                            if each.rect.bottom >0:
+                                each.destory = True
+
+
         screen.blit(background, (0, 0))
         if not pause:
             pygame.mixer.music.unpause()
@@ -282,13 +297,18 @@ def main():
                             small_flight_index = 0
                             score += 1000
                             each.reset1()
+            #Bomb
+            bomb_text = bomb_font.render('X %d'%bomb_num,True,WHITE)
+            text_rect = bomb_text.get_rect()
+            screen.blit(bomb_image,(10,height-10-bomb_rect.height))
+            screen.blit(bomb_text,(20+bomb_rect.width,height-5-text_rect.height))
 
         if pause:
             pygame.mixer.music.pause()
             pause_font = pygame.font.Font('font/font.ttf',60)
             pause_text = pause_font.render('Pause...',True, RED)
             pause_text_rect = pause_text.get_rect()
-            screen.blit(pause_text,((width - pause_text_rect[0])//2-75,(height-pause_text_rect[1])//2))
+            screen.blit(pause_text,((width - pause_text_rect.width)//2,(height-pause_text_rect.height)//2))
 
 
         score_text = score_font.render('Score: %s' %str(score),True, WHITE)
