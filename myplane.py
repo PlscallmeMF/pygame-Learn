@@ -22,6 +22,7 @@ class Myplane(pygame.sprite.Sprite):
         self.destory = False
         self.mask = pygame.mask.from_surface(self.image1)
         self.control = True
+        self.invincible = False
     def moveup(self):
         if self.rect.top>0:
             self.rect.top -=self.speed
@@ -46,5 +47,6 @@ class Myplane(pygame.sprite.Sprite):
         self.rect.left,self.rect.top = (self.width-self.rect.width)//2,\
                                        (self.height-self.rect.height-15)
         self.destory = False
+        self.invincible = True
 
 

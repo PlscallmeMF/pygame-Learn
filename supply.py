@@ -13,7 +13,7 @@ class Bullet_Supply(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
-        if self.rect.top < self.width:
+        if self.rect.top < self.height:
             self.rect.top +=self.speed
         else:
             self.active = False
@@ -35,7 +35,7 @@ class Bomb_Supply(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
-        if self.rect.top < self.width:
+        if self.rect.top < self.height:
             self.rect.top +=self.speed
         else:
             self.active = False

@@ -5,8 +5,10 @@ import traceback
 import myplane
 from pygame import *
 import enemy
-import bullets
-os.chdir(r'F:\BaiduNetdiskDownload\096Pygame：飞机大战7\课堂演示')
+import bullet
+import supply
+from random import *
+os.chdir(r'/Users/mingfeishi/PycharmProjects/flight game/pygame-Learn-master')
 
 pygame.init()
 pygame.mixer.init()
@@ -87,8 +89,15 @@ def main():
     bullet1_num = 8
     bullet1_index = 0
     for i in range(bullet1_num):
-        bullet1.append(bullets.Bullet1(me.rect.midtop))
-
+        bullet1.append(bullet.Bullet1(me.rect.midtop))
+    # Super Bullet
+    bullet2 = []
+    bullet2_num = 12
+    bullet2_index = 0
+    for i in range(bullet2_num//3):
+        bullet2.append(bullet.Bullet2((me.rect.centerx,me.rect.centery)))
+        bullet2.append(bullet.Bullet2((me.rect.centerx-33,me.rect.centery)))
+        bullet2.append(bullet.Bullet2((me.rect.centerx+30,me.rect.centery)))
     # Destroy index
     small_flight_index = 0
     mid_flight_index = 0
@@ -104,6 +113,9 @@ def main():
     bomb_rect  = bomb_image.get_rect()
     bomb_font = pygame.font.Font('font/font.ttf',40)
     bomb_num = 3
+    # Supplies
+    bullet_supply = supply.Bullet_Supply(bg_size)
+    bomb_supply = supply.Bomb_Supply(bg_size)
     #Pause or Unpause
     pause = False
     pause_nor_image =pygame.image.load('images/pause_nor.png').convert_alpha()
@@ -113,6 +125,16 @@ def main():
     pause_rect = pause_nor_image.get_rect()
     pause_rect.left, pause_rect.top = width - pause_rect.width, 10
     pause_img = pause_nor_image
+    # Super bullet time
+    timerecord = False
+    #Life number
+    life_image = pygame.image.load('images/life.png').convert_alpha()
+    life_rect = life_image.get_rect()
+    life_num = 3
+    #invincible time
+    invincible_time = 180
+    #gameover
+    gameover = False
 
     running = True
 
@@ -149,8 +171,9 @@ def main():
                                 each.destory = True
 
 
+
         screen.blit(background, (0, 0))
-        if not pause:
+        if life_num and not pause:
             pygame.mixer.music.unpause()
             key_pressed = pygame.key.get_pressed()
             if key_pressed[K_UP]:
@@ -161,12 +184,21 @@ def main():
                 me.moveleft()
             if key_pressed[K_RIGHT]:
                 me.moveright()
+                
 
             if not (delay % 10):
-                bullet1[bullet1_index].reset4(me.rect.midtop)
-                bullet1_index = (bullet1_index + 1) % bullet1_num
+                if timerecord:
+                    bullets = bullet2
+                    bullets[bullet2_index].reset4((me.rect.centerx-33,me.rect.centery))
+                    bullets[bullet2_index+1].reset4((me.rect.centerx+33,me.rect.centery))
+                    bullets[bullet2_index+2].reset4((me.rect.centerx,me.rect.centery))
+                    bullet2_index = (bullet2_index+3) % bullet2_num
+                else:
+                    bullets = bullet1
+                    bullets[bullet1_index].reset4(me.rect.midtop)
+                    bullet1_index = (bullet1_index + 1) % bullet1_num
 
-            for b in bullet1:
+            for b in bullets:
                 if b.active:
                     b.move()
                     screen.blit(b.img,b.rect)
@@ -182,6 +214,14 @@ def main():
                             else:
                                 e.destory = True
 
+            if me.invincible:
+                me.destory = False
+                invincible_time -= 1
+                if invincible_time ==0:
+                    me.invincible = False
+                    invincible_time = 180
+
+
             if not me.destory:
                 if sw_image:
                     screen.blit(me.image1,me.rect)
@@ -190,12 +230,16 @@ def main():
             else:
                 if me_flight_index ==1:
                     me_down_sound.play()
-                if not (delay % 5):
+                if not (delay % 2):
                     screen.blit(each.destory_images[me_flight_index], each.rect)
                     me_flight_index+=1
                     if me_flight_index == 4:
                         me_flight_index = 0
+                        life_num -= 1
                         me.reset()
+                        
+                    
+
 
             if not (delay % 10):
                 sw_image = not sw_image
@@ -213,6 +257,8 @@ def main():
             for each in big_enemy:
                 if not each.destory:
                     each.move()
+                    if each.rect.bottom == -50:
+                        enemy3_fly_sound.play()
                     if each.hit:
                         screen.blit(each.image_hit, each.rect)
                         each.hit = False
@@ -236,12 +282,11 @@ def main():
                                      (each.rect.left + each.rect.width * energy_remain,
                                       each.rect.top - 5), 2)
 
-                    if each.rect.bottom == -50:
-                        enemy3_fly_sound.play()
+
                 else:
                     if big_flight_index == 1:
                         enemy3_down_sound.play()
-                    if not (delay % 5):
+                    if not (delay % 2):
                         screen.blit(each.destory_images[big_flight_index], each.rect)
                         big_flight_index += 1
                         if big_flight_index == 6:
@@ -249,6 +294,8 @@ def main():
                             big_flight_index = 0
                             score += 10000
                             each.reset3()
+
+
 
             for each in mid_enemy:
                 if not each.destory:
@@ -275,7 +322,7 @@ def main():
                 else:
                     if mid_flight_index == 1:
                         enemy2_down_sound.play()
-                    if not (delay % 5):
+                    if not (delay % 2):
                         screen.blit(each.destory_images[mid_flight_index], each.rect)
                         mid_flight_index += 1
                         if mid_flight_index == 4:
@@ -290,19 +337,77 @@ def main():
                 else:
                     if small_flight_index == 1:
                         enemy1_down_sound.play()
-                    if not (delay % 5):
+                    if not (delay % 2):
                         screen.blit(each.destory_images[small_flight_index], each.rect)
                         small_flight_index += 1
                         if small_flight_index == 4:
                             small_flight_index = 0
                             score += 1000
                             each.reset1()
+
+            if not (delay % (20 * 60)):
+                supply_sound.play()
+                if choice([True, False]):
+                    bomb_supply.reset()
+                else:
+                    bullet_supply.reset()
+            if bomb_supply.active:
+                bomb_supply.move()
+                screen.blit(bomb_supply.image, bomb_supply.rect)
+                if pygame.sprite.collide_mask(bomb_supply, me):
+                    get_bomb_sound.play()
+                    if bomb_num < 3:
+                        bomb_num += 1
+                    bomb_supply.active = False
+
+            if bullet_supply.active:
+                bullet_supply.move()
+                screen.blit(bullet_supply.image, bullet_supply.rect)
+                if pygame.sprite.collide_mask(bullet_supply, me):
+                    get_bullet_sound.play()
+                    lefttime = 10 * 60
+                    timerecord = True
+                    bullet_supply.active = False
+            if timerecord:
+                lefttime -=1
+                if lefttime == 0:
+                    timerecord = False
+                        
+
             #Bomb
             bomb_text = bomb_font.render('X %d'%bomb_num,True,WHITE)
             text_rect = bomb_text.get_rect()
             screen.blit(bomb_image,(10,height-10-bomb_rect.height))
             screen.blit(bomb_text,(20+bomb_rect.width,height-5-text_rect.height))
-
+            #Life
+            if life_num:
+                for i in range(life_num):
+                    screen.blit(life_image,(width-10-(i+1)*life_rect.width,height-10-life_rect.height))
+        
+        elif life_num ==0:
+            pygame.mixer_music.stop()
+            pygame.mixer.stop()
+            delay = 0
+            
+            if not gameover:
+                gameover = True
+            # Highest score
+                with open('record.txt','r') as f:
+                    record_score = int(f.read())
+                    
+                if score > record_score:
+                    with open('record.txt','w') as f:
+                        f.write(str(score))
+                
+                # Gameover
+                gameover_font = pygame.font.Font('font/font.TTF',48)
+                again_image = pygame.image.load('images/again.png').convert_alpha()
+                again_rect = again_image.get_rect()
+                gameover_image = pygame.image.load('images/gameover.png').convert_alpha()
+                gameover_rect = gameover_image.get_rect()
+                    
+            
+            
         if pause:
             pygame.mixer.music.pause()
             pause_font = pygame.font.Font('font/font.ttf',60)
@@ -313,24 +418,26 @@ def main():
 
         score_text = score_font.render('Score: %s' %str(score),True, WHITE)
         screen.blit(score_text,(10,5))
+        level_text = score_font.render('Level: %s' %str(level),True, WHITE)
+        screen.blit(level_text,(width//2+60,5))
         # Pause image
         screen.blit(pause_img,pause_rect)
         pygame.display.flip()
         clock.tick(60)
         #Level increase
-        if score > 10000 and score<=50000:
+        if score > 20000 and score<=80000:
             if level ==1:
                 level = 2
                 level_up = True
-        elif score > 50000 and score <= 100000:
+        elif score > 80000 and score <= 200000:
             if level ==2:
                 level = 3
                 level_up = True
-        elif score >100000 and score <=200000:
+        elif score >200000 and score <=400000:
             if level ==3:
                 level = 4
                 level_up = True
-        elif score > 200000:
+        elif score > 400000:
             if level ==4:
                 level = 5
                 level_up = True
