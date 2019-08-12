@@ -1,6 +1,7 @@
 import pygame
 from random import *
 
+
 class Bullet_Supply(pygame.sprite.Sprite):
     def __init__(self,bg_size):
         pygame.sprite.Sprite.__init__(self)

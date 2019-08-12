@@ -1,6 +1,7 @@
 import pygame
 import os
 
+
 class Myplane(pygame.sprite.Sprite):
     def __init__(self,bg_size):
         pygame.sprite.Sprite.__init__(self)

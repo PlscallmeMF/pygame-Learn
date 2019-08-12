@@ -1,6 +1,7 @@
 import pygame
 from random import *
 
+
 class SmallEnemy(pygame.sprite.Sprite):
     def __init__(self,bg_size):
         pygame.sprite.Sprite.__init__(self)
@@ -15,9 +16,7 @@ class SmallEnemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.width,self.height = bg_size[0] ,bg_size[1]
         self.speed = 2
-        self.rect.left, self.rect.top = \
-                        randint(0,self.width-self.rect.width),\
-                        randint(-5*self.height,0)
+        self.rect.left, self.rect.top = randint(0,self.width-self.rect.width),randint(-5*self.height,0)
         self.destory = False
         self.mask = pygame.mask.from_surface(self.image)
 
@@ -27,9 +26,7 @@ class SmallEnemy(pygame.sprite.Sprite):
         else:
             self.reset1()
     def reset1(self):
-        self.rect.left, self.rect.top = \
-            randint(0, self.width - self.rect.width), \
-            randint(-5 * self.height, 0)
+        self.rect.left, self.rect.top =randint(0, self.width - self.rect.width),randint(-5 * self.height, 0)
         self.destory = False
 
 class MidEnemy(pygame.sprite.Sprite):
@@ -48,9 +45,7 @@ class MidEnemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.width,self.height = bg_size[0] ,bg_size[1]
         self.speed = 1.5
-        self.rect.left, self.rect.top = \
-                        randint(0,self.width-self.rect.width),\
-                        randint(-10*self.height,-self.height)
+        self.rect.left, self.rect.top = randint(0,self.width-self.rect.width),randint(-10*self.height,-self.height)
         self.destory = False
         self.mask = pygame.mask.from_surface(self.image)
         self.energy = MidEnemy.energy
@@ -61,9 +56,7 @@ class MidEnemy(pygame.sprite.Sprite):
         else:
             self.reset2()
     def reset2(self):
-        self.rect.left, self.rect.top = \
-            randint(0, self.width - self.rect.width), \
-            randint(-10 * self.height, -self.height)
+        self.rect.left, self.rect.top =randint(0, self.width - self.rect.width), randint(-10 * self.height, -self.height)
         self.destory = False
         self.energy = MidEnemy.energy
 class BigEnemy(pygame.sprite.Sprite):
@@ -85,9 +78,7 @@ class BigEnemy(pygame.sprite.Sprite):
         self.rect = self.image1.get_rect()
         self.width,self.height = bg_size[0] ,bg_size[1]
         self.speed = 1
-        self.rect.left, self.rect.top = \
-                        randint(0,self.width-self.rect.width),\
-                        randint(-15*self.height,-5*self.height)
+        self.rect.left, self.rect.top =randint(0,self.width-self.rect.width),randint(-15*self.height,-5*self.height)
         self.destory = False
         self.mask = pygame.mask.from_surface(self.image1)
         self.energy = BigEnemy.energy
@@ -98,8 +89,6 @@ class BigEnemy(pygame.sprite.Sprite):
         else:
             self.reset3()
     def reset3(self):
-        self.rect.left, self.rect.top = \
-            randint(0, self.width - self.rect.width), \
-            randint(-15 * self.height, -5*self.height)
+        self.rect.left, self.rect.top =randint(0, self.width - self.rect.width),randint(-15 * self.height, -5*self.height)
         self.destory = False
         self.energy = BigEnemy.energy

@@ -1,4 +1,5 @@
 import os
+os.chdir(r'D:\pygame\flight_game')
 import pygame
 import sys
 import traceback
@@ -8,7 +9,6 @@ import enemy
 import bullet
 import supply
 from random import *
-os.chdir(r'/Users/mingfeishi/PycharmProjects/flight game/pygame-Learn-master')
 
 pygame.init()
 pygame.mixer.init()
@@ -135,6 +135,12 @@ def main():
     invincible_time = 180
     #gameover
     gameover = False
+    # 游戏结束画面
+    gameover_font = pygame.font.Font("font/font.TTF", 48)
+    again_image = pygame.image.load("images/again.png").convert_alpha()
+    again_rect = again_image.get_rect()
+    gameover_image = pygame.image.load("images/gameover.png").convert_alpha()
+    gameover_rect = gameover_image.get_rect()
 
     running = True
 
@@ -383,6 +389,11 @@ def main():
             if life_num:
                 for i in range(life_num):
                     screen.blit(life_image,(width-10-(i+1)*life_rect.width,height-10-life_rect.height))
+
+            score_text = score_font.render('Score: %s' %str(score),True, WHITE)
+            screen.blit(score_text,(10,5))
+            level_text = score_font.render('Level: %s' %str(level),True, WHITE)
+            screen.blit(level_text,(width//2+60,5))
         
         elif life_num ==0:
             pygame.mixer_music.stop()
@@ -396,30 +407,56 @@ def main():
                     record_score = int(f.read())
                     
                 if score > record_score:
+                    record_score = score
                     with open('record.txt','w') as f:
-                        f.write(str(score))
-                
-                # Gameover
-                gameover_font = pygame.font.Font('font/font.TTF',48)
-                again_image = pygame.image.load('images/again.png').convert_alpha()
-                again_rect = again_image.get_rect()
-                gameover_image = pygame.image.load('images/gameover.png').convert_alpha()
-                gameover_rect = gameover_image.get_rect()
-                    
+                        f.write(str(score))  
+
+
+            # Gameover
+            record_score_text = score_font.render("Best : %d" % record_score, True, (255, 255, 255))
+            screen.blit(record_score_text, (50, 50))
+            
+            gameover_text1 = gameover_font.render("Your Score", True, (255, 255, 255))
+            gameover_text1_rect = gameover_text1.get_rect()
+            gameover_text1_rect.left, gameover_text1_rect.top =(width - gameover_text1_rect.width) // 2, height // 3
+            screen.blit(gameover_text1, gameover_text1_rect)
+            
+            gameover_text2 = gameover_font.render(str(score), True, (255, 255, 255))
+            gameover_text2_rect = gameover_text2.get_rect()
+            gameover_text2_rect.left, gameover_text2_rect.top = (width - gameover_text2_rect.width) // 2, gameover_text1_rect.bottom + 10
+            screen.blit(gameover_text2, gameover_text2_rect)
+
+            again_rect.left, again_rect.top =(width - again_rect.width) // 2, gameover_text2_rect.bottom + 50
+            screen.blit(again_image, again_rect)
+
+            gameover_rect.left, gameover_rect.top = (width - again_rect.width) // 2,again_rect.bottom + 10
+            screen.blit(gameover_image, gameover_rect)
+
+            # 检测用户的鼠标操作
+            # 如果用户按下鼠标左键
+            if pygame.mouse.get_pressed()[0]:
+                # 获取鼠标坐标
+                pos = pygame.mouse.get_pos()
+                # 如果用户点击“重新开始”
+                if again_rect.left < pos[0] < again_rect.right and again_rect.top < pos[1] < again_rect.bottom:
+                    # 调用main函数，重新开始游戏
+                    main()
+                # 如果用户点击“结束游戏”            
+                elif gameover_rect.left < pos[0] < gameover_rect.right and gameover_rect.top < pos[1] < gameover_rect.bottom:
+                    # 退出游戏
+                    pygame.quit()
+                    sys.exit()      
+
             
             
-        if pause:
+        elif pause:
             pygame.mixer.music.pause()
             pause_font = pygame.font.Font('font/font.ttf',60)
             pause_text = pause_font.render('Pause...',True, RED)
             pause_text_rect = pause_text.get_rect()
             screen.blit(pause_text,((width - pause_text_rect.width)//2,(height-pause_text_rect.height)//2))
 
-
-        score_text = score_font.render('Score: %s' %str(score),True, WHITE)
-        screen.blit(score_text,(10,5))
-        level_text = score_font.render('Level: %s' %str(level),True, WHITE)
-        screen.blit(level_text,(width//2+60,5))
+            
         # Pause image
         screen.blit(pause_img,pause_rect)
         pygame.display.flip()
